@@ -19,6 +19,7 @@ public void ConfigureServices(IServiceCollection s)
 {
     ...
     // optionally can be set url for auth callback - for example, /authenticationUrl
+    // if not set, default value is /api/auth
     s.AddTelegramAuth(_ => new TelegramAuthConfig("botIdHere", "botTokenHere", "/authenticationUrl"));
     ...
 }
@@ -32,7 +33,9 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 }
 ```
 
-3. Send message (example) to user with link for authentication
+### Usage (Telegram Bot)
+
+Send message (example) to user with link for authentication
 
 ```csharp
 var msgId = await bot.SendTextMessageAsync(update.Message.Chat,
@@ -52,4 +55,21 @@ var msgId = await bot.SendTextMessageAsync(update.Message.Chat,
 await bot.PinChatMessageAsync(update.Message.Chat, msgId.MessageId, cancellationToken: cancellationToken);
 ```
 
-4. That's all. After user click on button, he will be redirected to your application page with authenticated user.
+After user click on button, will called TelegramAuthenticator.Authenticate and he will be redirected to your application page with authenticated user.
+
+### Usage (Telegram Mini App)
+
+```javascript
+import {useWebApp} from "vue-tg";
+
+const data = useWebApp(); // use injected Telegram data
+
+onMounted(async () => {
+    const authenticationUrl = '/authenticationUrl?' + data.initData;
+    const authResult = await fetch(authenticationUrl); // send GET request to /authenticationUrl with initData
+    if (authResult.ok) {
+        const jsonResponse = await authResult.json() as { redirectUrl?: string };
+        alert(jsonResponse.redirectUrl); // show redirectUrl (example)
+    }
+})
+```
